@@ -48,41 +48,37 @@ pipeline {
                 // Crea también el directorio de reportes con mkdir -p
               sh """
             echo "Instalando dependencias..."
-            pip3 install --no-cache-dir -r sqp/requirements.txt
+            # Crear entorno virtual
+            python3 -m venv venv
+            # Activar e instalar dependencias
+            . venv/bin/activate
+            pip install --no-cache-dir -r sqp/requirements.txt
             mkdir -p ${REPORTS_DIR}
         """
             }
         }
 
         stage("3 · Pruebas unitarias") {
-            steps {
-                // TODO 3: Ejecuta pytest con:
-                //   --cov=src
-                //   --cov-report=xml (para SonarQube)
-                //   --cov-report=html (para el dashboard)
-                //   --cov-fail-under=${COVERAGE_THRESHOLD}
-                //   --junitxml (para publicar resultados en Jenkins)
-                sh """
-                    . venv/bin/activate
-                    cd sqp
-                    python3 -m pytest tests/ \
-                        --cov=src \
-                        --cov-report=xml:../${REPORTS_DIR}/coverage.xml \
-                        --cov-report=html:../${REPORTS_DIR}/htmlcov \
-                        --cov-fail-under=${COVERAGE_THRESHOLD} \
-                        --junitxml=../${REPORTS_DIR}/test-results.xml
-                    cd ..
-                """
-            }
-            post {
-                always {
-                    // TODO 4: Publica los resultados de JUnit en Jenkins
-                    // Pista: usa la instrucción junit con la ruta al XML
-                    echo "TODO: publicar resultados"
-                     junit "${REPORTS_DIR}/test-results.xml"
-                }
-            }
+    steps {
+        sh """
+            # Activar entorno virtual y ejecutar pruebas
+            . venv/bin/activate
+            cd sqp
+            pytest tests/ \
+                --cov=src \
+                --cov-report=xml:../${REPORTS_DIR}/coverage.xml \
+                --cov-report=html:../${REPORTS_DIR}/htmlcov \
+                --cov-fail-under=${COVERAGE_THRESHOLD} \
+                --junitxml=../${REPORTS_DIR}/test-results.xml
+            cd ..
+        """
+    }
+    post {
+        always {
+            junit "${REPORTS_DIR}/test-results.xml"
         }
+    }
+}
 
         stage("4 · Análisis SonarQube") {
             steps {
