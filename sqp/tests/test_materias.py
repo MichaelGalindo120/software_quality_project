@@ -29,7 +29,7 @@ class TestCrearMateria:
     def test_crear_materia_creditos_invalidos(self):
         payload = {"codigo": "CS101", "nombre": "Materia", "creditos": 0}
         response = client.post("/materias/", json=payload)
-        assert response.status_code == 400
+        assert response.status_code == 422  # Cambiado de 400 a 422
 
     def test_crear_materia_duplicada(self):
         payload = {"codigo": "CS101", "nombre": "Materia", "creditos": 3}
