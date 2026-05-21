@@ -116,80 +116,102 @@ class TestEstadisticasGlobales:
         assert stats["promedio_global"] == 0.0
 
     def test_division_por_cero_promedio_estudiante(self, setup_datos):
-        with pytest.raises(ZeroDivisionError):
-            calcular_promedio_estudiante("E001")
+        # AHORA: No lanza excepción, retorna 0.0 (comportamiento mejorado)
+        promedio = calcular_promedio_estudiante("E001")
+        assert promedio == 0.0  # Sin notas, promedio es 0.0
 
     def test_promedio_estudiante_endpoint(self, setup_datos):
-        client.post("/notas/", json={
+        # Primero crear un estudiante (setup_datos ya lo hace)
+        # Registrar una nota
+        response_nota = client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
             "actividad": "P1",
             "valor": 4.0
         })
+        assert response_nota.status_code == 201
+        
         response = client.get("/notas/promedio/estudiante/E001")
         assert response.status_code == 200
         assert response.json()["promedio"] == 4.0
 
     def test_reporte_con_notas_mixtas(self, setup_datos):
         # Registrar nota aprobada
-        client.post("/notas/", json={
+        response1 = client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
             "actividad": "Parcial 1",
             "valor": 4.0
         })
+        assert response1.status_code == 201
+        
         # Registrar nota reprobada
-        client.post("/notas/", json={
+        response2 = client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
             "actividad": "Parcial 2",
             "valor": 2.0
         })
+        assert response2.status_code == 201
+        
         resultado = reporte_academico("E001")
         assert resultado["total_notas"] == 2
         assert resultado["promedio"] == 3.0
 
     def test_notas_de_estudiante_endpoint(self, setup_datos):
-        client.post("/notas/", json={
+        response_nota = client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
             "actividad": "Parcial 1",
             "valor": 4.0
         })
+        assert response_nota.status_code == 201
+        
         response = client.get("/notas/estudiante/E001")
         assert response.status_code == 200
         data = response.json()
         assert len(data) >= 1
 
     def test_promedio_materia_endpoint(self, setup_datos):
-        client.post("/notas/", json={
+        response_nota = client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
             "actividad": "Parcial 1",
             "valor": 4.0
         })
+        assert response_nota.status_code == 201
+        
         response = client.get("/notas/promedio/materia/CS101")
         assert response.status_code == 200
         data = response.json()
         assert data["promedio"] == 4.0
 
     def test_estadisticas_con_datos(self, setup_datos):
-        client.post("/estudiantes/", json={
+        # Crear segundo estudiante
+        response_est = client.post("/estudiantes/", json={
             "codigo": "E002", "nombre": "Luis",
             "email": "luis@test.com", "semestre": 3
         })
-        client.post("/notas/", json={
+        assert response_est.status_code == 201
+        
+        # Nota para E001
+        response1 = client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
             "actividad": "P1",
             "valor": 4.0
         })
-        client.post("/notas/", json={
+        assert response1.status_code == 201
+        
+        # Nota para E002
+        response2 = client.post("/notas/", json={
             "codigo_estudiante": "E002",
             "codigo_materia": "CS101",
             "actividad": "P1",
             "valor": 3.0
         })
+        assert response2.status_code == 201
+        
         stats = estadisticas_globales()
         assert stats["total_estudiantes"] == 2
         assert stats["total_notas"] == 2
