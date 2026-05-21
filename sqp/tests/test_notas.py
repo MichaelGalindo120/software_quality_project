@@ -16,6 +16,7 @@ client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def limpiar_db():
+    """Limpia la base de datos antes y después de cada prueba."""
     reset_db()
     yield
     reset_db()
@@ -150,10 +151,10 @@ class TestEstadisticasGlobales:
         response_nota = client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
-            "actividad": "P1",
+            "actividad": "Par1",  # Cambiado de "P1" a "Par1" (cumple min_length=3)
             "valor": 4.0
         })
-        assert response_nota.status_code == 201
+        assert response_nota.status_code == 201, f"Error: {response_nota.text}"
         
         response = client.get("/notas/promedio/estudiante/E001")
         assert response.status_code == 200
@@ -259,7 +260,7 @@ class TestEstadisticasGlobales:
         response1 = client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
-            "actividad": "P1",
+            "actividad": "Par1",  # Cambiado de "P1" a "Par1"
             "valor": 4.0
         })
         assert response1.status_code == 201
@@ -268,7 +269,7 @@ class TestEstadisticasGlobales:
         response2 = client.post("/notas/", json={
             "codigo_estudiante": "E002",
             "codigo_materia": "CS101",
-            "actividad": "P1",
+            "actividad": "Par1",  # Cambiado de "P1" a "Par1"
             "valor": 3.0
         })
         assert response2.status_code == 201
