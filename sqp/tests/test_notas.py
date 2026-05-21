@@ -120,7 +120,34 @@ class TestEstadisticasGlobales:
         assert stats["total_estudiantes"] == 0
         assert stats["promedio_global"] == 0.0
 
+def test_division_por_cero_promedio_estudiante(self):
+    """
+    DOCUMENTA LA DEUDA: ZeroDivisionError cuando el estudiante no tiene notas.
+    Después de corregir el servicio, este test debe usar pytest.raises
+    o verificar que retorna 0.0 según la estrategia elegida.
+    """
+    # Crear estudiante sin notas
+    client.post("/estudiantes/", json={"codigo":"E001",...})
+    # Antes de corregir: lanza ZeroDivisionError
+    with pytest.raises(ZeroDivisionError):
+        calcular_promedio_estudiante("E001")
 
+def test_promedio_estudiante_endpoint(self, setup_datos):
+    # Registrar una nota primero
+    client.post("/notas/", json={"codigo_estudiante":"E001",
+        "codigo_materia":"CS101","actividad":"P1","valor":4.0})
+    response = client.get("/notas/promedio/estudiante/E001")
+    assert response.status_code == 200
+    assert response.json()["promedio"] == 4.0
+
+def test_reporte_con_notas_mixtas(self, setup_datos):
+    client.post("/notas/", json={..., "valor": 4.0})  # aprobado
+    client.post("/notas/", json={..., "valor": 2.0})  # reprobado
+    response = client.get("/notas/reporte/E001")
+    data = response.json()
+    assert data["aprobadas"] == 1
+    assert data["reprobadas"] == 1
+    assert data["promedio"] == 3.0
 # ─────────────────────────────────────────────────────────────
 #  TODO para el equipo:
 #  Agregar tests para DOCUMENTAR y CORREGIR las deudas técnicas:
