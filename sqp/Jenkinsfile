@@ -41,9 +41,14 @@ pipeline {
                 // TODO 2: Instala las dependencias de Python
                 // Pista: usa pip3 con --no-cache-dir y el archivo requirements.txt
                 // Crea también el directorio de reportes con mkdir -p
-                sh """
-                    echo "TODO: instalar dependencias"
+               sh """
+                    echo "Instalando dependencias..."
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip3 install --no-cache-dir -r sqp/requirements.txt
+                    mkdir -p ${REPORTS_DIR}
                 """
+
             }
         }
 
@@ -56,7 +61,15 @@ pipeline {
                 //   --cov-fail-under=${COVERAGE_THRESHOLD}
                 //   --junitxml (para publicar resultados en Jenkins)
                 sh """
-                    echo "TODO: ejecutar pytest"
+                    . venv/bin/activate
+                    cd sqp
+                    python3 -m pytest tests/ \
+                        --cov=src \
+                        --cov-report=xml:../${REPORTS_DIR}/coverage.xml \
+                        --cov-report=html:../${REPORTS_DIR}/htmlcov \
+                        --cov-fail-under=${COVERAGE_THRESHOLD} \
+                        --junitxml=../${REPORTS_DIR}/test-results.xml
+                    cd ..
                 """
             }
             post {
@@ -64,6 +77,7 @@ pipeline {
                     // TODO 4: Publica los resultados de JUnit en Jenkins
                     // Pista: usa la instrucción junit con la ruta al XML
                     echo "TODO: publicar resultados"
+                     junit "${REPORTS_DIR}/test-results.xml"
                 }
             }
         }
@@ -77,8 +91,18 @@ pipeline {
                 //   -Dsonar.python.coverage.reportPaths
                 //   -Dsonar.python.version=3
                 withSonarQubeEnv("SonarQube") {
-                    sh """
-                        echo "TODO: ejecutar sonar-scanner"
+                     sh """
+                        . venv/bin/activate
+                        sonar-scanner \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.projectName=${SONAR_PROJECT_NAME} \
+                            -Dsonar.host.url=${SONAR_HOST_URL} \
+                            -Dsonar.sources=sqp/src \
+                            -Dsonar.tests=sqp/tests \
+                            -Dsonar.python.coverage.reportPaths=${REPORTS_DIR}/coverage.xml \
+                            -Dsonar.python.version=3 \
+                            -Dsonar.exclusions=**/__pycache__/**,**/venv/** \
+                            -Dsonar.junit.reportsPath=${REPORTS_DIR}/test-results.xml
                     """
                 }
             }
@@ -89,6 +113,9 @@ pipeline {
                 // TODO 6: Espera el resultado del Quality Gate de SonarQube
                 // Pista: usa timeout y waitForQualityGate abortPipeline: true
                 echo "TODO: verificar Quality Gate"
+                 timeout(time: 5, unit: "MINUTES") {
+                    waitForQualityGate abortPipeline: true
+                }
             }
         }
 
@@ -98,6 +125,7 @@ pipeline {
                     echo "Proyecto : ${APP_NAME}"
                     echo "Branch   : \$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo N/A)"
                     echo "Commit   : \$(git rev-parse --short HEAD 2>/dev/null || echo N/A)"
+                    echo "Reportes generados en: ${REPORTS_DIR}/"
                 """
             }
         }
@@ -110,6 +138,15 @@ pipeline {
         //   failure  — mensaje de fallo con URL de SonarQube
         always {
             echo "Pipeline finalizado: ${currentBuild.currentResult}"
+             archiveArtifacts artifacts: "${REPORTS_DIR}/**", allowEmptyArchive: true
+        }
+        success {
+            echo " Build exitoso! Calidad aprobada."
+            echo " Reporte de cobertura disponible en: ${REPORTS_DIR}/htmlcov/index.html"
+        }
+        failure {
+            echo " Build fallido. Revisa los reportes."
+            echo " Consulta SonarQube: ${SONAR_HOST_URL}/dashboard?id=${SONAR_PROJECT_KEY}"
         }
     }
 }
