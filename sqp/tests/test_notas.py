@@ -1,7 +1,6 @@
 """
 tests/test_notas.py
 Pruebas unitarias para notas y el servicio académico.
-Cobertura actual: ~45% — el equipo debe completar hasta ≥85%.
 """
 import pytest
 from fastapi.testclient import TestClient
@@ -32,10 +31,10 @@ def setup_datos():
     client.post("/materias/", json={
         "codigo": "CS101", "nombre": "Calidad del Software", "creditos": 3
     })
+    yield
 
 
 class TestEsAprobado:
-
     def test_nota_tres_es_aprobado(self):
         assert es_aprobado(3.0) is True
 
@@ -50,7 +49,6 @@ class TestEsAprobado:
 
 
 class TestRegistrarNota:
-
     def test_registrar_nota_exitosa(self, setup_datos):
         payload = {
             "codigo_estudiante": "E001",
@@ -96,13 +94,11 @@ class TestRegistrarNota:
 
 
 class TestReporteAcademico:
-
     def test_reporte_estudiante_inexistente(self):
         resultado = reporte_academico("X999")
         assert "error" in resultado
 
     def test_reporte_sin_notas(self):
-        # Crear estudiante directamente en DB para prueba de servicio
         from src.models.database import get_estudiantes
         get_estudiantes()["E001"] = {
             "codigo": "E001", "nombre": "Ana", "email": "a@t.com",
@@ -114,25 +110,16 @@ class TestReporteAcademico:
 
 
 class TestEstadisticasGlobales:
-
     def test_estadisticas_sin_datos(self):
         stats = estadisticas_globales()
         assert stats["total_estudiantes"] == 0
         assert stats["promedio_global"] == 0.0
 
     def test_division_por_cero_promedio_estudiante(self, setup_datos):
-        """
-        DOCUMENTA LA DEUDA: ZeroDivisionError cuando el estudiante no tiene notas.
-        Después de corregir el servicio, este test debe usar pytest.raises
-        o verificar que retorna 0.0 según la estrategia elegida.
-        """
-        # Crear estudiante sin notas (ya creado por setup_datos)
-        # Antes de corregir: lanza ZeroDivisionError
         with pytest.raises(ZeroDivisionError):
             calcular_promedio_estudiante("E001")
 
     def test_promedio_estudiante_endpoint(self, setup_datos):
-        # Registrar una nota primero
         client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
@@ -144,31 +131,25 @@ class TestEstadisticasGlobales:
         assert response.json()["promedio"] == 4.0
 
     def test_reporte_con_notas_mixtas(self, setup_datos):
-    # Registrar nota aprobada
-    client.post("/notas/", json={
-        "codigo_estudiante": "E001",
-        "codigo_materia": "CS101",
-        "actividad": "Parcial 1",
-        "valor": 4.0
-    })
-    # Registrar nota reprobada
-    client.post("/notas/", json={
-        "codigo_estudiante": "E001",
-        "codigo_materia": "CS101",
-        "actividad": "Parcial 2",
-        "valor": 2.0
-    })
-    
-    # Usar el servicio directamente en lugar del endpoint que no existe
-    from src.services.academic_service import reporte_academico
-    resultado = reporte_academico("E001")
-    
-    # Verificar que el reporte contiene las notas
-    assert resultado["total_notas"] == 2
-    assert resultado["promedio"] == 3.0  # (4.0 + 2.0) / 2 = 3.0
+        # Registrar nota aprobada
+        client.post("/notas/", json={
+            "codigo_estudiante": "E001",
+            "codigo_materia": "CS101",
+            "actividad": "Parcial 1",
+            "valor": 4.0
+        })
+        # Registrar nota reprobada
+        client.post("/notas/", json={
+            "codigo_estudiante": "E001",
+            "codigo_materia": "CS101",
+            "actividad": "Parcial 2",
+            "valor": 2.0
+        })
+        resultado = reporte_academico("E001")
+        assert resultado["total_notas"] == 2
+        assert resultado["promedio"] == 3.0
 
     def test_notas_de_estudiante_endpoint(self, setup_datos):
-        """GET /notas/estudiante/E001 con notas registradas"""
         client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
@@ -181,7 +162,6 @@ class TestEstadisticasGlobales:
         assert len(data) >= 1
 
     def test_promedio_materia_endpoint(self, setup_datos):
-        """GET /notas/promedio/materia/CS101 con ≥1 nota"""
         client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
@@ -194,13 +174,10 @@ class TestEstadisticasGlobales:
         assert data["promedio"] == 4.0
 
     def test_estadisticas_con_datos(self, setup_datos):
-        """Registra varios estudiantes/notas y valida el reporte global"""
-        # Crear segundo estudiante
         client.post("/estudiantes/", json={
             "codigo": "E002", "nombre": "Luis",
             "email": "luis@test.com", "semestre": 3
         })
-        # Registrar notas
         client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
