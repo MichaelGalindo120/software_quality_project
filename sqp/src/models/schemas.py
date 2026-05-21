@@ -4,7 +4,6 @@ Pruebas unitarias para notas y el servicio académico.
 """
 import pytest
 from fastapi.testclient import TestClient
-from main import app
 from src.models.database import reset_db
 from src.services.academic_service import (
     es_aprobado, calcular_promedio_estudiante,
