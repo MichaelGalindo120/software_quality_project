@@ -4,7 +4,7 @@ Pruebas unitarias para notas y el servicio académico.
 """
 import pytest
 from fastapi.testclient import TestClient
-from main import app
+from main import app  # <--- IMPORTANTE: Agregar esta importación
 from src.models.database import reset_db
 from src.services.academic_service import (
     es_aprobado, calcular_promedio_estudiante,
@@ -83,6 +83,7 @@ class TestRegistrarNota:
         assert response.status_code == 404
 
     def test_registrar_nota_valor_invalido(self, setup_datos):
+        """Prueba que una nota fuera del rango 0.0-5.0 sea rechazada."""
         payload = {
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
@@ -90,7 +91,7 @@ class TestRegistrarNota:
             "valor": 6.0
         }
         response = client.post("/notas/", json=payload)
-        assert response.status_code == 422  # Cambiado de 400 a 422
+        assert response.status_code == 422
 
 
 class TestReporteAcademico:
@@ -116,13 +117,10 @@ class TestEstadisticasGlobales:
         assert stats["promedio_global"] == 0.0
 
     def test_division_por_cero_promedio_estudiante(self, setup_datos):
-        # AHORA: No lanza excepción, retorna 0.0 (comportamiento mejorado)
         promedio = calcular_promedio_estudiante("E001")
-        assert promedio == 0.0  # Sin notas, promedio es 0.0
+        assert promedio == 0.0
 
     def test_promedio_estudiante_endpoint(self, setup_datos):
-        # Primero crear un estudiante (setup_datos ya lo hace)
-        # Registrar una nota
         response_nota = client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
@@ -136,7 +134,6 @@ class TestEstadisticasGlobales:
         assert response.json()["promedio"] == 4.0
 
     def test_reporte_con_notas_mixtas(self, setup_datos):
-        # Registrar nota aprobada
         response1 = client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
@@ -145,7 +142,6 @@ class TestEstadisticasGlobales:
         })
         assert response1.status_code == 201
         
-        # Registrar nota reprobada
         response2 = client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
@@ -187,14 +183,12 @@ class TestEstadisticasGlobales:
         assert data["promedio"] == 4.0
 
     def test_estadisticas_con_datos(self, setup_datos):
-        # Crear segundo estudiante
         response_est = client.post("/estudiantes/", json={
             "codigo": "E002", "nombre": "Luis",
             "email": "luis@test.com", "semestre": 3
         })
         assert response_est.status_code == 201
-        
-        # Nota para E001
+
         response1 = client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
@@ -202,8 +196,7 @@ class TestEstadisticasGlobales:
             "valor": 4.0
         })
         assert response1.status_code == 201
-        
-        # Nota para E002
+
         response2 = client.post("/notas/", json={
             "codigo_estudiante": "E002",
             "codigo_materia": "CS101",
@@ -211,7 +204,7 @@ class TestEstadisticasGlobales:
             "valor": 3.0
         })
         assert response2.status_code == 201
-        
+
         stats = estadisticas_globales()
         assert stats["total_estudiantes"] == 2
         assert stats["total_notas"] == 2
