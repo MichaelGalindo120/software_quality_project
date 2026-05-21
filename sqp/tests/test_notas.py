@@ -144,25 +144,28 @@ class TestEstadisticasGlobales:
         assert response.json()["promedio"] == 4.0
 
     def test_reporte_con_notas_mixtas(self, setup_datos):
-        # Registrar nota aprobada
-        client.post("/notas/", json={
-            "codigo_estudiante": "E001",
-            "codigo_materia": "CS101",
-            "actividad": "Parcial 1",
-            "valor": 4.0
-        })
-        # Registrar nota reprobada
-        client.post("/notas/", json={
-            "codigo_estudiante": "E001",
-            "codigo_materia": "CS101",
-            "actividad": "Parcial 2",
-            "valor": 2.0
-        })
-        response = client.get("/estudiantes/E001/reporte")
-        assert response.status_code == 200
-        data = response.json()
-        # Ajusta según lo que realmente retorna tu endpoint
-        assert "notas" in data or "promedio" in data
+    # Registrar nota aprobada
+    client.post("/notas/", json={
+        "codigo_estudiante": "E001",
+        "codigo_materia": "CS101",
+        "actividad": "Parcial 1",
+        "valor": 4.0
+    })
+    # Registrar nota reprobada
+    client.post("/notas/", json={
+        "codigo_estudiante": "E001",
+        "codigo_materia": "CS101",
+        "actividad": "Parcial 2",
+        "valor": 2.0
+    })
+    
+    # Usar el servicio directamente en lugar del endpoint que no existe
+    from src.services.academic_service import reporte_academico
+    resultado = reporte_academico("E001")
+    
+    # Verificar que el reporte contiene las notas
+    assert resultado["total_notas"] == 2
+    assert resultado["promedio"] == 3.0  # (4.0 + 2.0) / 2 = 3.0
 
     def test_notas_de_estudiante_endpoint(self, setup_datos):
         """GET /notas/estudiante/E001 con notas registradas"""
