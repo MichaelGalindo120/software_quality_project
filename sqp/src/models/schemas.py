@@ -9,7 +9,7 @@ MEJORAS IMPLEMENTADAS:
   - [CORREGIDO] Constantes para valores mágicos
   - [MEJORADO] Validaciones de rango con ge/le
   - [MEJORADO] Validación de email con pattern
-  - [MEJORADO] Ejemplos en JSON Schema
+  - [MEJORADO] Ejemplos en JSON Schema (sin warnings)
 """
 from typing import Optional
 from pydantic import BaseModel, Field, ConfigDict
@@ -50,31 +50,27 @@ class EstudianteCreate(BaseModel):
         ...,
         description="Código único del estudiante (ej: E001)",
         min_length=CODIGO_MIN_LENGTH,
-        max_length=CODIGO_MAX_LENGTH,
-        example="E001"
+        max_length=CODIGO_MAX_LENGTH
     )
     
     nombre: str = Field(
         ...,
         description="Nombre completo del estudiante",
         min_length=NOMBRE_MIN_LENGTH,
-        max_length=NOMBRE_MAX_LENGTH,
-        example="Ana García"
+        max_length=NOMBRE_MAX_LENGTH
     )
     
     email: str = Field(
         ...,
         description="Correo electrónico del estudiante",
-        pattern=r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
-        example="ana.garcia@universidad.edu"
+        pattern=r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     )
     
     semestre: int = Field(
         ...,
         description=f"Semestre actual del estudiante ({SEMESTRE_MIN}-{SEMESTRE_MAX})",
         ge=SEMESTRE_MIN,
-        le=SEMESTRE_MAX,
-        example=5
+        le=SEMESTRE_MAX
     )
     
     model_config = ConfigDict(
@@ -82,7 +78,13 @@ class EstudianteCreate(BaseModel):
         extra="forbid",
         json_schema_extra={
             "title": "EstudianteCreate",
-            "description": "Esquema para crear un nuevo estudiante"
+            "description": "Esquema para crear un nuevo estudiante",
+            "example": {
+                "codigo": "E001",
+                "nombre": "Ana García",
+                "email": "ana.garcia@universidad.edu",
+                "semestre": 5
+            }
         }
     )
 
@@ -95,34 +97,29 @@ class EstudianteResponse(BaseModel):
     
     codigo: str = Field(
         ...,
-        description="Código único del estudiante",
-        example="E001"
+        description="Código único del estudiante"
     )
     
     nombre: str = Field(
         ...,
-        description="Nombre completo del estudiante",
-        example="Ana García"
+        description="Nombre completo del estudiante"
     )
     
     email: str = Field(
         ...,
-        description="Correo electrónico del estudiante",
-        example="ana.garcia@universidad.edu"
+        description="Correo electrónico del estudiante"
     )
     
     semestre: int = Field(
         ...,
         description=f"Semestre actual ({SEMESTRE_MIN}-{SEMESTRE_MAX})",
         ge=SEMESTRE_MIN,
-        le=SEMESTRE_MAX,
-        example=5
+        le=SEMESTRE_MAX
     )
     
     activo: bool = Field(
         default=True,
-        description="Estado activo/inactivo del estudiante",
-        example=True
+        description="Estado activo/inactivo del estudiante"
     )
     
     model_config = ConfigDict(
@@ -156,31 +153,27 @@ class MateriaCreate(BaseModel):
         ...,
         description="Código único de la materia (ej: CS101)",
         min_length=CODIGO_MIN_LENGTH,
-        max_length=CODIGO_MAX_LENGTH,
-        example="CS101"
+        max_length=CODIGO_MAX_LENGTH
     )
     
     nombre: str = Field(
         ...,
         description="Nombre de la materia",
         min_length=3,
-        max_length=100,
-        example="Calidad del Software"
+        max_length=100
     )
     
     creditos: int = Field(
         ...,
         description=f"Número de créditos ({CREDITOS_MIN}-{CREDITOS_MAX})",
         ge=CREDITOS_MIN,
-        le=CREDITOS_MAX,
-        example=3
+        le=CREDITOS_MAX
     )
     
     descripcion: Optional[str] = Field(
         default=None,
         description="Descripción opcional de la materia",
-        max_length=DESCRIPCION_MAX_LENGTH,
-        example="Curso de calidad y pruebas de software"
+        max_length=DESCRIPCION_MAX_LENGTH
     )
     
     model_config = ConfigDict(
@@ -188,7 +181,13 @@ class MateriaCreate(BaseModel):
         extra="forbid",
         json_schema_extra={
             "title": "MateriaCreate",
-            "description": "Esquema para crear una nueva materia"
+            "description": "Esquema para crear una nueva materia",
+            "example": {
+                "codigo": "CS101",
+                "nombre": "Calidad del Software",
+                "creditos": 3,
+                "descripcion": "Curso de calidad y pruebas de software"
+            }
         }
     )
 
@@ -201,28 +200,24 @@ class MateriaResponse(BaseModel):
     
     codigo: str = Field(
         ...,
-        description="Código único de la materia",
-        example="CS101"
+        description="Código único de la materia"
     )
     
     nombre: str = Field(
         ...,
-        description="Nombre de la materia",
-        example="Calidad del Software"
+        description="Nombre de la materia"
     )
     
     creditos: int = Field(
         ...,
         description=f"Número de créditos ({CREDITOS_MIN}-{CREDITOS_MAX})",
         ge=CREDITOS_MIN,
-        le=CREDITOS_MAX,
-        example=3
+        le=CREDITOS_MAX
     )
     
     descripcion: Optional[str] = Field(
         default=None,
-        description="Descripción opcional",
-        example="Curso de calidad y pruebas de software"
+        description="Descripción opcional"
     )
     
     model_config = ConfigDict(
@@ -256,32 +251,28 @@ class NotaCreate(BaseModel):
         ...,
         description="Código del estudiante",
         min_length=CODIGO_MIN_LENGTH,
-        max_length=CODIGO_MAX_LENGTH,
-        example="E001"
+        max_length=CODIGO_MAX_LENGTH
     )
     
     codigo_materia: str = Field(
         ...,
         description="Código de la materia",
         min_length=CODIGO_MIN_LENGTH,
-        max_length=CODIGO_MAX_LENGTH,
-        example="CS101"
+        max_length=CODIGO_MAX_LENGTH
     )
     
     actividad: str = Field(
         ...,
         description="Nombre de la actividad evaluada",
         min_length=ACTIVIDAD_MIN_LENGTH,
-        max_length=ACTIVIDAD_MAX_LENGTH,
-        example="Examen Parcial 1"
+        max_length=ACTIVIDAD_MAX_LENGTH
     )
     
     valor: float = Field(
         ...,
         description=f"Valor de la nota ({NOTA_MIN}-{NOTA_MAX})",
         ge=NOTA_MIN,
-        le=NOTA_MAX,
-        example=4.5
+        le=NOTA_MAX
     )
     
     model_config = ConfigDict(
@@ -289,7 +280,13 @@ class NotaCreate(BaseModel):
         extra="forbid",
         json_schema_extra={
             "title": "NotaCreate",
-            "description": "Esquema para crear una nueva nota"
+            "description": "Esquema para crear una nueva nota",
+            "example": {
+                "codigo_estudiante": "E001",
+                "codigo_materia": "CS101",
+                "actividad": "Examen Parcial 1",
+                "valor": 4.5
+            }
         }
     )
 
@@ -303,40 +300,34 @@ class NotaResponse(BaseModel):
     id: int = Field(
         ...,
         description="Identificador único de la nota (auto-generado)",
-        ge=1,
-        example=1
+        ge=1
     )
     
     codigo_estudiante: str = Field(
         ...,
-        description="Código del estudiante",
-        example="E001"
+        description="Código del estudiante"
     )
     
     codigo_materia: str = Field(
         ...,
-        description="Código de la materia",
-        example="CS101"
+        description="Código de la materia"
     )
     
     actividad: str = Field(
         ...,
-        description="Nombre de la actividad",
-        example="Examen Parcial 1"
+        description="Nombre de la actividad"
     )
     
     valor: float = Field(
         ...,
         description=f"Valor de la nota ({NOTA_MIN}-{NOTA_MAX})",
         ge=NOTA_MIN,
-        le=NOTA_MAX,
-        example=4.5
+        le=NOTA_MAX
     )
     
     aprobado: bool = Field(
         ...,
-        description=f"Indica si la nota es aprobada (≥{NOTA_APROBACION})",
-        example=True
+        description=f"Indica si la nota es aprobada (≥{NOTA_APROBACION})"
     )
     
     model_config = ConfigDict(
