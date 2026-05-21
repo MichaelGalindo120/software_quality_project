@@ -4,7 +4,7 @@ Pruebas unitarias para notas y el servicio académico.
 """
 import pytest
 from fastapi.testclient import TestClient
-from main import app  # <--- IMPORTANTE: Agregar esta importación
+from main import app
 from src.models.database import reset_db
 from src.services.academic_service import (
     es_aprobado, calcular_promedio_estudiante,
@@ -121,6 +121,15 @@ class TestEstadisticasGlobales:
         assert promedio == 0.0
 
     def test_promedio_estudiante_endpoint(self, setup_datos):
+        # Crear datos explícitamente
+        client.post("/estudiantes/", json={
+            "codigo": "E001", "nombre": "Ana García",
+            "email": "ana@test.com", "semestre": 5
+        })
+        client.post("/materias/", json={
+            "codigo": "CS101", "nombre": "Calidad del Software", "creditos": 3
+        })
+        
         response_nota = client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
@@ -134,6 +143,15 @@ class TestEstadisticasGlobales:
         assert response.json()["promedio"] == 4.0
 
     def test_reporte_con_notas_mixtas(self, setup_datos):
+        # Crear datos explícitamente
+        client.post("/estudiantes/", json={
+            "codigo": "E001", "nombre": "Ana García",
+            "email": "ana@test.com", "semestre": 5
+        })
+        client.post("/materias/", json={
+            "codigo": "CS101", "nombre": "Calidad del Software", "creditos": 3
+        })
+        
         response1 = client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
@@ -155,6 +173,15 @@ class TestEstadisticasGlobales:
         assert resultado["promedio"] == 3.0
 
     def test_notas_de_estudiante_endpoint(self, setup_datos):
+        # Crear datos explícitamente
+        client.post("/estudiantes/", json={
+            "codigo": "E001", "nombre": "Ana García",
+            "email": "ana@test.com", "semestre": 5
+        })
+        client.post("/materias/", json={
+            "codigo": "CS101", "nombre": "Calidad del Software", "creditos": 3
+        })
+        
         response_nota = client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
@@ -169,6 +196,15 @@ class TestEstadisticasGlobales:
         assert len(data) >= 1
 
     def test_promedio_materia_endpoint(self, setup_datos):
+        # Crear datos explícitamente
+        client.post("/estudiantes/", json={
+            "codigo": "E001", "nombre": "Ana García",
+            "email": "ana@test.com", "semestre": 5
+        })
+        client.post("/materias/", json={
+            "codigo": "CS101", "nombre": "Calidad del Software", "creditos": 3
+        })
+        
         response_nota = client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
@@ -183,12 +219,26 @@ class TestEstadisticasGlobales:
         assert data["promedio"] == 4.0
 
     def test_estadisticas_con_datos(self, setup_datos):
-        response_est = client.post("/estudiantes/", json={
+        # Crear estudiantes
+        response_est1 = client.post("/estudiantes/", json={
+            "codigo": "E001", "nombre": "Ana",
+            "email": "ana@test.com", "semestre": 5
+        })
+        assert response_est1.status_code == 201
+        
+        response_est2 = client.post("/estudiantes/", json={
             "codigo": "E002", "nombre": "Luis",
             "email": "luis@test.com", "semestre": 3
         })
-        assert response_est.status_code == 201
+        assert response_est2.status_code == 201
 
+        # Crear materia
+        response_mat = client.post("/materias/", json={
+            "codigo": "CS101", "nombre": "Calidad", "creditos": 3
+        })
+        assert response_mat.status_code == 201
+
+        # Nota para E001
         response1 = client.post("/notas/", json={
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
@@ -197,6 +247,7 @@ class TestEstadisticasGlobales:
         })
         assert response1.status_code == 201
 
+        # Nota para E002
         response2 = client.post("/notas/", json={
             "codigo_estudiante": "E002",
             "codigo_materia": "CS101",
