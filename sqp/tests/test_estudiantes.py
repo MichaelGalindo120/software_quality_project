@@ -44,12 +44,12 @@ class TestCrearEstudiante:
     def test_crear_estudiante_email_invalido(self):
         payload = {"codigo": "E002", "nombre": "Pedro", "email": "sinatsign", "semestre": 2}
         response = client.post("/estudiantes/", json=payload)
-        assert response.status_code == 400
+        assert response.status_code == 422
 
     def test_crear_estudiante_semestre_invalido(self):
         payload = {"codigo": "E003", "nombre": "Luis", "email": "l@t.com", "semestre": 11}
         response = client.post("/estudiantes/", json=payload)
-        assert response.status_code == 400
+        assert response.status_code == 422
 
 
 class TestObtenerEstudiante:
