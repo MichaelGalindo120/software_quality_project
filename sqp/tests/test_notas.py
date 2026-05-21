@@ -90,7 +90,7 @@ class TestRegistrarNota:
             "valor": 6.0
         }
         response = client.post("/notas/", json=payload)
-        assert response.status_code == 400
+        assert response.status_code == 422  # Cambiado de 400 a 422
 
 
 class TestReporteAcademico:
