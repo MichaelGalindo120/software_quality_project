@@ -82,36 +82,49 @@ class TestListarEstudiantes:
         assert len(response.json()) == 1
 
     def test_eliminar_estudiante_existente(self):
-    client.post("/estudiantes/", json={...})
-    response = client.delete("/estudiantes/E001")
-    assert response.status_code == 204
+        client.post("/estudiantes/", json={
+            "codigo": "E001", 
+            "nombre": "Ana", 
+            "email": "ana@test.com", 
+            "semestre": 3
+        })
+        response = client.delete("/estudiantes/E001")
+        assert response.status_code == 204
 
-def test_eliminar_estudiante_inexistente(self):
-    response = client.delete("/estudiantes/X999")
-    assert response.status_code == 404
+    def test_eliminar_estudiante_inexistente(self):
+        response = client.delete("/estudiantes/X999")
+        assert response.status_code == 404
 
-def test_desactivar_estudiante(self):
-    client.post("/estudiantes/", json={...})
-    response = client.put("/estudiantes/E001/desactivar")
-    assert response.status_code == 200
-    assert response.json()["activo"] is False
+    def test_desactivar_estudiante(self):
+        client.post("/estudiantes/", json={
+            "codigo": "E001", 
+            "nombre": "Ana", 
+            "email": "ana@test.com", 
+            "semestre": 3
+        })
+        response = client.put("/estudiantes/E001/desactivar")
+        assert response.status_code == 200
+        assert response.json()["activo"] is False
 
-def test_semestre_minimo_y_maximo(self):
-    # semestre=1 válido
-    r1 = client.post("/estudiantes/", json={"codigo":"E001",...,"semestre":1})
-    assert r1.status_code == 201
-    # semestre=10 válido
-    r2 = client.post("/estudiantes/", json={"codigo":"E002",...,"semestre":10})
-    assert r2.status_code == 201
+    def test_semestre_minimo_y_maximo(self):
+        # semestre=1 válido
+        r1 = client.post("/estudiantes/", json={
+            "codigo": "E001", 
+            "nombre": "Test1", 
+            "email": "test1@test.com", 
+            "semestre": 1
+        })
+        assert r1.status_code == 201
+        # semestre=10 válido
+        r2 = client.post("/estudiantes/", json={
+            "codigo": "E002", 
+            "nombre": "Test2", 
+            "email": "test2@test.com", 
+            "semestre": 10
+        })
+        assert r2.status_code == 201
 
 
 # ─────────────────────────────────────────────────────────────
 #  TODO para el equipo:
-#  Agregar tests para:
-#  - test_eliminar_estudiante_existente
-#  - test_eliminar_estudiante_inexistente
-#  - test_desactivar_estudiante
-#  - test_codigo_se_convierte_a_mayusculas
-#  - test_semestre_minimo_valido (semestre=1)
-#  - test_semestre_maximo_valido (semestre=10)
-# ─────────────────────────────────────────────────────────────
+
