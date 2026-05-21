@@ -46,14 +46,11 @@ pipeline {
                 // TODO 2: Instala las dependencias de Python
                 // Pista: usa pip3 con --no-cache-dir y el archivo requirements.txt
                 // Crea también el directorio de reportes con mkdir -p
-               sh """
-                    echo "Instalando dependencias..."
-                    python3 -m venv venv
-                    . venv/bin/activate
-                    pip3 install --no-cache-dir -r sqp/requirements.txt
-                    mkdir -p ${REPORTS_DIR}
-                """
-
+              sh """
+            echo "Instalando dependencias..."
+            pip3 install --no-cache-dir -r sqp/requirements.txt
+            mkdir -p ${REPORTS_DIR}
+        """
             }
         }
 
