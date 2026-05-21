@@ -55,11 +55,13 @@ class Database:
         with self._data_lock:
             return self._materias
     
+
+    
     def get_notas(self) -> List[Any]:
         """Retorna la lista de notas."""
         with self._data_lock:
-            return self._notas.copy()  # Retorna copia para evitar modificaciones externas
-    
+            return self._notas()  # CORREGIDO: Ya no retorna copia
+
     # ========== Operaciones con estudiantes ==========
     
     def add_estudiante(self, codigo: str, estudiante_data: Any) -> None:
