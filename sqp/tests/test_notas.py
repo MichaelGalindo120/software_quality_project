@@ -21,19 +21,6 @@ def limpiar_db():
     reset_db()
 
 
-@pytest.fixture
-def setup_datos():
-    """Crea un estudiante y una materia base para las pruebas."""
-    client.post("/estudiantes/", json={
-        "codigo": "E001", "nombre": "Ana García",
-        "email": "ana@test.com", "semestre": 5
-    })
-    client.post("/materias/", json={
-        "codigo": "CS101", "nombre": "Calidad del Software", "creditos": 3
-    })
-    yield
-
-
 class TestEsAprobado:
     def test_nota_tres_es_aprobado(self):
         assert es_aprobado(3.0) is True
@@ -49,7 +36,16 @@ class TestEsAprobado:
 
 
 class TestRegistrarNota:
-    def test_registrar_nota_exitosa(self, setup_datos):
+    def test_registrar_nota_exitosa(self):
+        # Crear datos necesarios
+        client.post("/estudiantes/", json={
+            "codigo": "E001", "nombre": "Ana García",
+            "email": "ana@test.com", "semestre": 5
+        })
+        client.post("/materias/", json={
+            "codigo": "CS101", "nombre": "Calidad del Software", "creditos": 3
+        })
+        
         payload = {
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
@@ -62,7 +58,11 @@ class TestRegistrarNota:
         assert data["valor"] == 4.0
         assert data["aprobado"] is True
 
-    def test_registrar_nota_estudiante_inexistente(self, setup_datos):
+    def test_registrar_nota_estudiante_inexistente(self):
+        client.post("/materias/", json={
+            "codigo": "CS101", "nombre": "Calidad del Software", "creditos": 3
+        })
+        
         payload = {
             "codigo_estudiante": "X999",
             "codigo_materia": "CS101",
@@ -72,7 +72,12 @@ class TestRegistrarNota:
         response = client.post("/notas/", json=payload)
         assert response.status_code == 404
 
-    def test_registrar_nota_materia_inexistente(self, setup_datos):
+    def test_registrar_nota_materia_inexistente(self):
+        client.post("/estudiantes/", json={
+            "codigo": "E001", "nombre": "Ana García",
+            "email": "ana@test.com", "semestre": 5
+        })
+        
         payload = {
             "codigo_estudiante": "E001",
             "codigo_materia": "XX999",
@@ -82,8 +87,15 @@ class TestRegistrarNota:
         response = client.post("/notas/", json=payload)
         assert response.status_code == 404
 
-    def test_registrar_nota_valor_invalido(self, setup_datos):
-        """Prueba que una nota fuera del rango 0.0-5.0 sea rechazada."""
+    def test_registrar_nota_valor_invalido(self):
+        client.post("/estudiantes/", json={
+            "codigo": "E001", "nombre": "Ana García",
+            "email": "ana@test.com", "semestre": 5
+        })
+        client.post("/materias/", json={
+            "codigo": "CS101", "nombre": "Calidad del Software", "creditos": 3
+        })
+        
         payload = {
             "codigo_estudiante": "E001",
             "codigo_materia": "CS101",
@@ -116,12 +128,17 @@ class TestEstadisticasGlobales:
         assert stats["total_estudiantes"] == 0
         assert stats["promedio_global"] == 0.0
 
-    def test_division_por_cero_promedio_estudiante(self, setup_datos):
+    def test_division_por_cero_promedio_estudiante(self):
+        # Crear estudiante sin notas
+        client.post("/estudiantes/", json={
+            "codigo": "E001", "nombre": "Ana García",
+            "email": "ana@test.com", "semestre": 5
+        })
         promedio = calcular_promedio_estudiante("E001")
         assert promedio == 0.0
 
-    def test_promedio_estudiante_endpoint(self, setup_datos):
-        # Crear datos explícitamente
+    def test_promedio_estudiante_endpoint(self):
+        # Crear datos
         client.post("/estudiantes/", json={
             "codigo": "E001", "nombre": "Ana García",
             "email": "ana@test.com", "semestre": 5
@@ -142,8 +159,8 @@ class TestEstadisticasGlobales:
         assert response.status_code == 200
         assert response.json()["promedio"] == 4.0
 
-    def test_reporte_con_notas_mixtas(self, setup_datos):
-        # Crear datos explícitamente
+    def test_reporte_con_notas_mixtas(self):
+        # Crear datos
         client.post("/estudiantes/", json={
             "codigo": "E001", "nombre": "Ana García",
             "email": "ana@test.com", "semestre": 5
@@ -172,8 +189,8 @@ class TestEstadisticasGlobales:
         assert resultado["total_notas"] == 2
         assert resultado["promedio"] == 3.0
 
-    def test_notas_de_estudiante_endpoint(self, setup_datos):
-        # Crear datos explícitamente
+    def test_notas_de_estudiante_endpoint(self):
+        # Crear datos
         client.post("/estudiantes/", json={
             "codigo": "E001", "nombre": "Ana García",
             "email": "ana@test.com", "semestre": 5
@@ -195,8 +212,8 @@ class TestEstadisticasGlobales:
         data = response.json()
         assert len(data) >= 1
 
-    def test_promedio_materia_endpoint(self, setup_datos):
-        # Crear datos explícitamente
+    def test_promedio_materia_endpoint(self):
+        # Crear datos
         client.post("/estudiantes/", json={
             "codigo": "E001", "nombre": "Ana García",
             "email": "ana@test.com", "semestre": 5
@@ -218,7 +235,7 @@ class TestEstadisticasGlobales:
         data = response.json()
         assert data["promedio"] == 4.0
 
-    def test_estadisticas_con_datos(self, setup_datos):
+    def test_estadisticas_con_datos(self):
         # Crear estudiantes
         response_est1 = client.post("/estudiantes/", json={
             "codigo": "E001", "nombre": "Ana",
