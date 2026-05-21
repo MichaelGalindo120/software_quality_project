@@ -15,6 +15,11 @@ pipeline {
         // SONAR_HOST_URL     = "???"         // URL del contenedor SonarQube
         // COVERAGE_THRESHOLD = "???"         // umbral mínimo de cobertura (sugerido: 60)
         // REPORTS_DIR        = "???"         // carpeta de reportes
+            SONAR_PROJECT_KEY  = "software-quality-project"     // clave del proyecto en SonarQube
+            SONAR_PROJECT_NAME = "grupo-or"     // nombre visible en SonarQube
+            SONAR_HOST_URL     = "http://mi-sonarqube:9000"     // URL del contenedor SonarQube
+            COVERAGE_THRESHOLD = "60"                           // umbral mínimo de cobertura (sugerido: 60)
+            REPORTS_DIR        = "reports"                      // carpeta de reportes
 
         APP_NAME = "software-quality-project"
     }
