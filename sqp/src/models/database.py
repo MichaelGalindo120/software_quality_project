@@ -2,10 +2,7 @@
 src/models/database.py
 In-memory storage for the application.
 
-DEUDA TÉCNICA CORREGIDA:
-  - [CRÍTICA] Sin autenticación ni autorización → PENDIENTE (requiere implementación externa)
-  - [ALTA]    Contador de IDs global mutable → CORREGIDO (ahora es thread-safe)
-  - [MEDIA]   Variable global sin encapsulamiento → CORREGIDO (ahora usa Singleton)
+
 """
 
 import threading

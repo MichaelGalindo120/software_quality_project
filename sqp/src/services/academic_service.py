@@ -2,12 +2,7 @@
 src/services/academic_service.py
 Business logic layer.
 
-DEUDA TÉCNICA CORREGIDA:
-  - [ALTA]   Código duplicado → CORREGIDO (función genérica _calcular_promedio)
-  - [ALTA]   División por cero → CORREGIDO (validación de lista vacía)
-  - [MEDIA]  God Function → CORREGIDO (función _clasificar_notas extraída)
-  - [MEDIA]  Magic numbers → CORREGIDO (constantes nombradas)
-  - [BAJA]   Variable no usada → CORREGIDO (ahora se retorna materia_vistas)
+
 """
 
 from typing import List, Dict, Any, Optional
