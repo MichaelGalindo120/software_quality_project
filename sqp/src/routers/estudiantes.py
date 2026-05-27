@@ -52,6 +52,12 @@ def obtener_estudiante(codigo: str):
         raise HTTPException(status_code=404, detail="Estudiante no encontrado")
     return db[codigo]
 
+@router.get("/{codigo}/reporte")
+def get_reporte_estudiante(codigo: str):
+    """Obtiene el reporte académico completo de un estudiante"""
+    from src.services.academic_service import reporte_academico
+    return reporte_academico(codigo)
+
 
 @router.delete("/{codigo}", status_code=204)
 def eliminar_estudiante(codigo: str):
