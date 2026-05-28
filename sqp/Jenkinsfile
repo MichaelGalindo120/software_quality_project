@@ -91,16 +91,16 @@ pipeline {
                 withSonarQubeEnv("SonarQube") {
                      sh """
                         . venv/bin/activate
-                        sonar-scanner \
-                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                            -Dsonar.projectName=${SONAR_PROJECT_NAME} \
-                            -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.sources=sqp/src \
-                            -Dsonar.tests=sqp/tests \
-                            -Dsonar.python.coverage.reportPaths=${REPORTS_DIR}/coverage.xml \
-                            -Dsonar.python.version=3 \
-                            -Dsonar.exclusions=**/__pycache__/**,**/venv/** \
-                            -Dsonar.junit.reportsPath=${REPORTS_DIR}/test-results.xml
+                sonar-scanner \
+                    -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                    -Dsonar.projectName=${SONAR_PROJECT_NAME} \
+                    -Dsonar.host.url=${SONAR_HOST_URL} \
+                    -Dsonar.sources=sqp/src \
+                    -Dsonar.tests=sqp/tests \
+                    -Dsonar.python.coverage.reportPaths=${REPORTS_DIR}/coverage.xml \
+                    -Dsonar.python.version=3 \
+                    -Dsonar.exclusions=**/__pycache__/**,**/venv/** \
+                    -Dsonar.junit.reportsPath=${REPORTS_DIR}/test-results.xml
                     """
                 }
             }
